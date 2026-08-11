@@ -1,0 +1,199 @@
+[
+{
+  "model": "catalog.district",
+  "pk": "080da40b-4f2f-444b-9d6e-a224ada2be6b",
+  "fields": {
+    "created_at": "2026-08-11T06:19:12.605Z",
+    "updated_at": "2026-08-11T13:34:09.666Z",
+    "name": "Zarbdor tumani",
+    "code": "ZARBDOR",
+    "sort_order": 13,
+    "is_active": true
+  }
+},
+{
+  "model": "catalog.district",
+  "pk": "36fbe0d2-0578-4da3-826f-37c0be5e093a",
+  "fields": {
+    "created_at": "2026-08-11T06:19:12.525Z",
+    "updated_at": "2026-08-11T13:34:09.620Z",
+    "name": "Zafarobod tumani",
+    "code": "ZAFAROBOD",
+    "sort_order": 12,
+    "is_active": true
+  }
+},
+{
+  "model": "catalog.district",
+  "pk": "5a3df027-beb3-4881-b3c5-0c9c10b3ebeb",
+  "fields": {
+    "created_at": "2026-08-11T06:19:12.695Z",
+    "updated_at": "2026-08-11T13:34:09.726Z",
+    "name": "Zomin tumani",
+    "code": "ZOMIN",
+    "sort_order": 14,
+    "is_active": true
+  }
+},
+{
+  "model": "catalog.district",
+  "pk": "6bdd4bd5-5768-44cb-99e4-88fe3421fae7",
+  "fields": {
+    "created_at": "2026-08-11T13:34:09.867Z",
+    "updated_at": "2026-08-11T13:34:09.867Z",
+    "name": "Dashtobod shahri",
+    "code": "DASHTOBOD",
+    "sort_order": 4,
+    "is_active": true
+  }
+},
+{
+  "model": "catalog.district",
+  "pk": "7a1f3da1-3b34-4799-acbe-f88ab115d6be",
+  "fields": {
+    "created_at": "2026-08-11T06:19:12.446Z",
+    "updated_at": "2026-08-11T13:34:09.547Z",
+    "name": "Yangiobod tumani",
+    "code": "YANGIOBOD",
+    "sort_order": 11,
+    "is_active": true
+  }
+},
+{
+  "model": "catalog.district",
+  "pk": "8795722e-e551-4f23-99e7-3a2e4260f5f3",
+  "fields": {
+    "created_at": "2026-08-11T05:05:55.784Z",
+    "updated_at": "2026-08-11T05:05:55.784Z",
+    "name": "Jizzax shahri",
+    "code": "JIZ-CITY",
+    "sort_order": 1,
+    "is_active": true
+  }
+},
+{
+  "model": "catalog.district",
+  "pk": "8a0c20d7-2ae7-4d73-a3db-dc51438ba184",
+  "fields": {
+    "created_at": "2026-08-11T06:19:12.027Z",
+    "updated_at": "2026-08-11T13:34:09.404Z",
+    "name": "Do'stlik tumani",
+    "code": "DUSTLIK",
+    "sort_order": 5,
+    "is_active": true
+  }
+},
+{
+  "model": "catalog.district",
+  "pk": "8a3152cf-75e3-46b5-b85f-f1839aae0f30",
+  "fields": {
+    "created_at": "2026-08-11T06:19:12.370Z",
+    "updated_at": "2026-08-11T06:19:12.370Z",
+    "name": "Paxtakor tumani",
+    "code": "PAXTAKOR",
+    "sort_order": 9,
+    "is_active": true
+  }
+},
+{
+  "model": "catalog.district",
+  "pk": "961ce34d-a6a0-4bc0-875d-4ed964903ff1",
+  "fields": {
+    "created_at": "2026-08-11T06:19:12.184Z",
+    "updated_at": "2026-08-11T13:34:09.512Z",
+    "name": "G'allaorol tumani",
+    "code": "GALLAOROL",
+    "sort_order": 7,
+    "is_active": true
+  }
+},
+{
+  "model": "catalog.district",
+  "pk": "a5ab1a56-507d-4681-935c-5ea8994d69ba",
+  "fields": {
+    "created_at": "2026-08-11T06:19:12.104Z",
+    "updated_at": "2026-08-11T13:34:09.440Z",
+    "name": "Forish tumani",
+    "code": "FORISH",
+    "sort_order": 6,
+    "is_active": true
+  }
+},
+{
+  "model": "catalog.district",
+  "pk": "a5dbf354-c1a0-41e3-860b-dd5ab4baa453",
+  "fields": {
+    "created_at": "2026-08-11T06:19:11.877Z",
+    "updated_at": "2026-08-11T06:19:11.877Z",
+    "name": "Arnasoy tumani",
+    "code": "ARNASOY",
+    "sort_order": 2,
+    "is_active": true
+  }
+},
+{
+  "model": "catalog.district",
+  "pk": "da7f49d7-7172-4b09-a1dd-31498c345254",
+  "fields": {
+    "created_at": "2026-08-11T13:34:09.956Z",
+    "updated_at": "2026-08-11T13:34:09.956Z",
+    "name": "Sharof Rashidov tumani",
+    "code": "SHAROF-RASHIDOV",
+    "sort_order": 10,
+    "is_active": true
+  }
+},
+{
+  "model": "catalog.district",
+  "pk": "f2ffe688-d85e-4417-a56b-926dd5d99448",
+  "fields": {
+    "created_at": "2026-08-11T06:19:11.964Z",
+    "updated_at": "2026-08-11T06:19:11.964Z",
+    "name": "Baxmal tumani",
+    "code": "BAXMAL",
+    "sort_order": 3,
+    "is_active": true
+  }
+},
+{
+  "model": "catalog.district",
+  "pk": "fe965f6d-2e04-470c-81b1-99f0e52abf72",
+  "fields": {
+    "created_at": "2026-08-11T06:19:12.298Z",
+    "updated_at": "2026-08-11T06:19:12.298Z",
+    "name": "Mirzacho'l tumani",
+    "code": "MIRZACHUL",
+    "sort_order": 8,
+    "is_active": true
+  }
+},
+{
+  "model": "catalog.laboratory",
+  "pk": "2b0fda12-aa3e-4db3-9655-770c5fa93590",
+  "fields": {
+    "created_at": "2026-08-11T05:05:55.788Z",
+    "updated_at": "2026-08-11T05:05:55.788Z",
+    "name": "Bakteriologiya laboratoriyasi",
+    "code": "BAK",
+    "description": null,
+    "sort_order": 1,
+    "is_active": true
+  }
+},
+{
+  "model": "catalog.service",
+  "pk": "0b54f1c2-7470-4c8f-99fe-e62d5860f55a",
+  "fields": {
+    "created_at": "2026-08-11T05:05:55.792Z",
+    "updated_at": "2026-08-11T05:05:55.792Z",
+    "name": "Qon tahlili",
+    "service_type": "Laboratoriya tekshiruvi",
+    "sample_type": "Qon",
+    "price": "25000.00",
+    "laboratory": "2b0fda12-aa3e-4db3-9655-770c5fa93590",
+    "district": null,
+    "is_active": true,
+    "sort_order": 0
+  }
+}
+]
