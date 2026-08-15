@@ -237,13 +237,17 @@ class NotificationsView(APIView):
             return Response([])
         district_id = None if province_wide else user_district_id(user)
 
-        clients_qs = Client.objects.order_by('-registered_at')[:10]
-        payments_qs = Payment.objects.select_related('admission__client').order_by('-paid_at')[:10]
-        lab_qs = LabOrder.objects.select_related('client').filter(status__in=READY_LAB_STATUSES).order_by('-updated_at')[:10]
+        clients_qs = Client.objects.all()
+        payments_qs = Payment.objects.select_related('admission__client')
+        lab_qs = LabOrder.objects.select_related('client').filter(status__in=READY_LAB_STATUSES)
         if district_id:
-            clients_qs = clients_qs.model.objects.filter(district_id=district_id).order_by('-registered_at')[:10]
+            clients_qs = clients_qs.filter(district_id=district_id)
             payments_qs = payments_qs.filter(district_id=district_id)
             lab_qs = lab_qs.filter(district_id=district_id)
+
+        clients_qs = clients_qs.order_by('-registered_at')[:10]
+        payments_qs = payments_qs.order_by('-paid_at')[:10]
+        lab_qs = lab_qs.order_by('-updated_at')[:10]
 
         items = []
         for c in clients_qs:
