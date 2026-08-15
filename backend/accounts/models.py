@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 
-from catalog.models import District
+from catalog.models import District, Laboratory
 from config.base_models import TimeStampedUUIDModel
 
 ROLE_CHOICES = [
@@ -58,6 +58,9 @@ class UserRole(TimeStampedUUIDModel):
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     district = models.ForeignKey(
         District, null=True, blank=True, on_delete=models.CASCADE, related_name='user_roles'
+    )
+    laboratory = models.ForeignKey(
+        Laboratory, null=True, blank=True, on_delete=models.SET_NULL, related_name='user_roles'
     )
 
     def __str__(self):

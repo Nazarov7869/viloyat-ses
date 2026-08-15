@@ -15,6 +15,11 @@ def user_district_id(user):
     return role.district_id if role else None
 
 
+def user_laboratory_id(user):
+    role = get_role(user)
+    return role.laboratory_id if role else None
+
+
 def is_province(user):
     """Mirrors public.is_province_viewer(): role is 'main' or 'viloyat'."""
     role = get_role(user)

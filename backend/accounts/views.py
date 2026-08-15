@@ -96,7 +96,9 @@ class UserAdminViewSet(viewsets.ViewSet):
         user = User.objects.create_user(email=data['email'], password=data['password'])
         role = data.get('role')
         if role:
-            UserRole.objects.create(user=user, role=role, district=data.get('district'))
+            UserRole.objects.create(
+                user=user, role=role, district=data.get('district'), laboratory=data.get('laboratory'),
+            )
         return Response(UserSummarySerializer(user).data, status=status.HTTP_201_CREATED)
 
     def partial_update(self, request, pk=None):
@@ -109,7 +111,7 @@ class UserAdminViewSet(viewsets.ViewSet):
             user.is_active = data['is_active']
             user.save(update_fields=['is_active'])
 
-        if 'role' in data or 'district' in data:
+        if 'role' in data or 'district' in data or 'laboratory' in data:
             role_obj = getattr(user, 'role_obj', None)
             if role_obj is None:
                 role_obj = UserRole(user=user, role=data.get('role') or 'qabul')
@@ -117,6 +119,8 @@ class UserAdminViewSet(viewsets.ViewSet):
                 role_obj.role = data['role']
             if 'district' in data:
                 role_obj.district = data['district']
+            if 'laboratory' in data:
+                role_obj.laboratory = data['laboratory']
             role_obj.save()
 
         user.refresh_from_db()

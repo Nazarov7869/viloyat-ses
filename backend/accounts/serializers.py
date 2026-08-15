@@ -2,7 +2,7 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from catalog.models import District
+from catalog.models import District, Laboratory
 
 from .models import ROLE_CHOICES, User, UserRole
 
@@ -27,11 +27,17 @@ class RegisterSerializer(serializers.ModelSerializer):
 def _role_payload(user):
     role = getattr(user, 'role_obj', None)
     if not role:
-        return {'role': None, 'district_id': None, 'district_name': None}
+        return {
+            'role': None, 'district_id': None, 'district_name': None,
+            'laboratory_id': None, 'laboratory_code': None, 'laboratory_name': None,
+        }
     return {
         'role': role.role,
         'district_id': str(role.district_id) if role.district_id else None,
         'district_name': role.district.name if role.district else None,
+        'laboratory_id': str(role.laboratory_id) if role.laboratory_id else None,
+        'laboratory_code': role.laboratory.code if role.laboratory else None,
+        'laboratory_name': role.laboratory.name if role.laboratory else None,
     }
 
 
@@ -50,6 +56,9 @@ class MeSerializer(serializers.Serializer):
     role = serializers.SerializerMethodField()
     district_id = serializers.SerializerMethodField()
     district_name = serializers.SerializerMethodField()
+    laboratory_id = serializers.SerializerMethodField()
+    laboratory_code = serializers.SerializerMethodField()
+    laboratory_name = serializers.SerializerMethodField()
     is_province = serializers.SerializerMethodField()
 
     def get_role(self, user):
@@ -60,6 +69,15 @@ class MeSerializer(serializers.Serializer):
 
     def get_district_name(self, user):
         return _role_payload(user)['district_name']
+
+    def get_laboratory_id(self, user):
+        return _role_payload(user)['laboratory_id']
+
+    def get_laboratory_code(self, user):
+        return _role_payload(user)['laboratory_code']
+
+    def get_laboratory_name(self, user):
+        return _role_payload(user)['laboratory_name']
 
     def get_is_province(self, user):
         role = getattr(user, 'role_obj', None)
@@ -100,10 +118,15 @@ class UserSummarySerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
     district_id = serializers.SerializerMethodField()
     district_name = serializers.SerializerMethodField()
+    laboratory_id = serializers.SerializerMethodField()
+    laboratory_name = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'is_active', 'is_superuser', 'created_at', 'role', 'district_id', 'district_name']
+        fields = [
+            'id', 'email', 'is_active', 'is_superuser', 'created_at', 'role',
+            'district_id', 'district_name', 'laboratory_id', 'laboratory_name',
+        ]
 
     def get_role(self, obj):
         role = getattr(obj, 'role_obj', None)
@@ -117,6 +140,14 @@ class UserSummarySerializer(serializers.ModelSerializer):
         role = getattr(obj, 'role_obj', None)
         return role.district.name if role and role.district else None
 
+    def get_laboratory_id(self, obj):
+        role = getattr(obj, 'role_obj', None)
+        return str(role.laboratory_id) if role and role.laboratory_id else None
+
+    def get_laboratory_name(self, obj):
+        role = getattr(obj, 'role_obj', None)
+        return role.laboratory.name if role and role.laboratory else None
+
 
 class AdminCreateUserSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -124,6 +155,9 @@ class AdminCreateUserSerializer(serializers.Serializer):
     role = serializers.ChoiceField(choices=ROLE_CHOICES, required=False, allow_null=True)
     district_id = serializers.PrimaryKeyRelatedField(
         source='district', queryset=District.objects.all(), required=False, allow_null=True
+    )
+    laboratory_id = serializers.PrimaryKeyRelatedField(
+        source='laboratory', queryset=Laboratory.objects.all(), required=False, allow_null=True
     )
 
     def validate_email(self, value):
@@ -137,5 +171,8 @@ class AdminUpdateUserSerializer(serializers.Serializer):
     role = serializers.ChoiceField(choices=ROLE_CHOICES, required=False, allow_null=True)
     district_id = serializers.PrimaryKeyRelatedField(
         source='district', queryset=District.objects.all(), required=False, allow_null=True
+    )
+    laboratory_id = serializers.PrimaryKeyRelatedField(
+        source='laboratory', queryset=Laboratory.objects.all(), required=False, allow_null=True
     )
     is_active = serializers.BooleanField(required=False)

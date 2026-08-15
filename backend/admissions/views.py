@@ -15,6 +15,7 @@ from accounts.permissions import (
     is_district_staff,
     is_province,
     user_district_id,
+    user_laboratory_id,
     user_role,
 )
 from clients.models import Client
@@ -196,9 +197,9 @@ class AdmissionItemViewSet(DistrictScopedMixin, viewsets.ModelViewSet):
 
 class LabOrderViewSet(viewsets.ModelViewSet):
     """
-    Laboratory work-queue. Province roles and laborants get access across every
-    district (a central lab receives samples from all districts); other staff
-    stay scoped to their own district's orders.
+    Laboratory work-queue. Province roles see every district (a central lab
+    receives samples from all districts); a laborant is scoped to their own
+    assigned laboratory only; other staff stay scoped to their own district.
     """
 
     queryset = LabOrder.objects.select_related('client', 'admission', 'laboratory', 'district').all()
@@ -210,8 +211,11 @@ class LabOrderViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
         user = self.request.user
-        if is_province(user) or user_role(user) == 'laborant':
+        if is_province(user):
             return qs
+        if user_role(user) == 'laborant':
+            laboratory_id = user_laboratory_id(user)
+            return qs.filter(laboratory_id=laboratory_id) if laboratory_id else qs.none()
         if is_district_staff(user):
             return qs.filter(district_id=user_district_id(user))
         return qs.none()
