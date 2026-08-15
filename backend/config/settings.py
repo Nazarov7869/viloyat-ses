@@ -123,3 +123,9 @@ CORS_ALLOWED_ORIGINS = config(
     default='http://localhost:8080,http://127.0.0.1:8080',
     cast=Csv(),
 )
+
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='', cast=Csv())
+
+# nginx terminates TLS and proxies plain HTTP to gunicorn. Without this Django
+# thinks every request is plain HTTP and the admin login's Origin check fails.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

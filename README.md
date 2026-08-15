@@ -20,7 +20,7 @@ python manage.py createsuperuser
 python manage.py runserver 127.0.0.1:8001
 ```
 
-Django admin: **http://127.0.0.1:8001/admin/** — shu yerda tumanlar, laboratoriyalar, xizmatlar qo'shiladi va foydalanuvchilarga rol (`main`, `qabul`, `payment`, `registrants`, `viloyat`, `laborant`) hamda tuman biriktiriladi.
+Django admin: **http://127.0.0.1:8001/django-admin/** — shu yerda tumanlar, laboratoriyalar, xizmatlar qo'shiladi va foydalanuvchilarga rol (`main`, `qabul`, `payment`, `registrants`, `viloyat`, `laborant`) hamda tuman biriktiriladi.
 
 API bazaviy manzili: `http://127.0.0.1:8001/api/`
 

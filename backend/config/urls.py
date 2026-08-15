@@ -10,7 +10,7 @@ admin_router = DefaultRouter()
 admin_router.register('users', UserAdminViewSet, basename='admin-user')
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('django-admin/', admin.site.urls),
     path('api/auth/', include('accounts.urls')),
     path('api/admin/', include(admin_router.urls)),
     path('api/public-stats/', PublicStatsView.as_view(), name='public-stats'),
