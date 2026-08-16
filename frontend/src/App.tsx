@@ -54,6 +54,14 @@ const App = () => (
           <Route path="/admin/qabul" element={<Navigate to="/admin/qabul-tolov" replace />} />
           <Route path="/admin/payment" element={<Navigate to="/admin/qabul-tolov" replace />} />
           <Route
+            path="/admin/laborant"
+            element={
+              <ProtectedRoute allowedRoles={["main", "laborant"]}>
+                <LaboratoryAdmin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin/laboratoriya/:code"
             element={
               <ProtectedRoute allowedRoles={["main", "qabul", "payment", "laborant", "registrants"]}>

@@ -56,7 +56,7 @@ const AdminLayout = ({ children, title, subtitle }: AdminLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [districtsOpen, setDistrictsOpen] = useState(true);
-  const { role, email, districtName, isProvince } = useUserContext();
+  const { role, email, districtName, laboratoryCode, isProvince } = useUserContext();
   const [laboratories, setLaboratories] = useState<LabItem[]>([]);
   const [districts, setDistricts] = useState<DistrictItem[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -123,11 +123,16 @@ const AdminLayout = ({ children, title, subtitle }: AdminLayoutProps) => {
   const handleLogout = async () => {
     await logout();
     localStorage.removeItem('adminRole');
+    localStorage.removeItem('adminLaboratoryCode');
     navigate('/login');
   };
 
   const adminRole = role ?? localStorage.getItem('adminRole') ?? 'main';
   const scopeLabel = isProvince ? "Jizzax viloyati" : districtName;
+  const visibleLaboratories =
+    adminRole === 'laborant'
+      ? laboratories.filter((l) => l.code === (laboratoryCode ?? localStorage.getItem('adminLaboratoryCode')))
+      : laboratories;
 
   const allNavItems = [
     { icon: LayoutDashboard, label: "Boshqaruv paneli", path: "/admin/main", roles: ["main"] },
@@ -196,7 +201,7 @@ const AdminLayout = ({ children, title, subtitle }: AdminLayoutProps) => {
             </Link>
           ))}
 
-          {adminRole !== "viloyat" && laboratories.length > 0 && (
+          {adminRole !== "viloyat" && visibleLaboratories.length > 0 && (
             <div className="pt-2">
               {sidebarOpen && (
                 <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-sidebar-foreground/50">
@@ -204,7 +209,7 @@ const AdminLayout = ({ children, title, subtitle }: AdminLayoutProps) => {
                 </p>
               )}
               <div className="space-y-1">
-                {laboratories.map((lab) => (
+                {visibleLaboratories.map((lab) => (
                   <Link
                     key={lab.id}
                     to={`/admin/laboratoriya/${lab.code}`}

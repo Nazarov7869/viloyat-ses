@@ -6,13 +6,14 @@ import { logError } from "@/lib/logger";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: "main" | "qabul" | "payment" | "registrants" | "viloyat";
+  requiredRole?: "main" | "qabul" | "payment" | "registrants" | "viloyat" | "laborant";
   allowedRoles?: string[];
 }
 
 const ProtectedRoute = ({ children, requiredRole, allowedRoles }: ProtectedRouteProps) => {
   const [authenticated, setAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [laboratoryCode, setLaboratoryCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
 
@@ -32,6 +33,7 @@ const ProtectedRoute = ({ children, requiredRole, allowedRoles }: ProtectedRoute
         if (!active) return;
         setAuthenticated(!!me);
         setUserRole(me?.role ?? null);
+        setLaboratoryCode(me?.laboratory_code ?? null);
       } catch (error) {
         logError("Error fetching user role:", error);
         if (active) {
@@ -69,6 +71,18 @@ const ProtectedRoute = ({ children, requiredRole, allowedRoles }: ProtectedRoute
   // Authenticated but no admin role - redirect to home
   if (!userRole) {
     return <Navigate to="/" replace />;
+  }
+
+  // Laborant faqat o'ziga biriktirilgan laboratoriya sahifasini ko'radi — boshqa
+  // laboratoriya kodi bilan (yoki kodsiz /admin/laborant orqali) kirishga urinsa,
+  // qat'iy ravishda o'z laboratoriyasiga qaytariladi.
+  const isLabRoute = requiredRole === "laborant" || !!allowedRoles?.includes("laborant");
+  if (userRole === "laborant" && isLabRoute && laboratoryCode) {
+    const ownPath = `/admin/laboratoriya/${laboratoryCode}`;
+    if (location.pathname.toLowerCase() !== ownPath.toLowerCase()) {
+      return <Navigate to={ownPath} replace />;
+    }
+    return <>{children}</>;
   }
 
   // Viloyat nazoratchisi faqat viloyat panelini ko'radi — universal sahifalar

@@ -12,6 +12,7 @@ import { logError } from "@/lib/logger";
 import { ROLE_OPTIONS } from "@/lib/ses";
 
 interface DistrictOption { id: string; name: string }
+interface LaboratoryOption { id: string; name: string }
 interface UserRow {
   id: string;
   email: string;
@@ -20,6 +21,8 @@ interface UserRow {
   role: string | null;
   district_id: string | null;
   district_name: string | null;
+  laboratory_id: string | null;
+  laboratory_name: string | null;
 }
 
 const DISTRICT_REQUIRED_ROLES = ["qabul", "payment", "registrants"];
@@ -29,19 +32,22 @@ const UsersManager = () => {
   const { toast } = useToast();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [districts, setDistricts] = useState<DistrictOption[]>([]);
+  const [laboratories, setLaboratories] = useState<LaboratoryOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ email: "", password: "", role: "qabul", district_id: "" });
+  const [form, setForm] = useState({ email: "", password: "", role: "qabul", district_id: "", laboratory_id: "" });
 
   const load = async () => {
     try {
-      const [usersRes, districtsRes] = await Promise.all([
+      const [usersRes, districtsRes, laboratoriesRes] = await Promise.all([
         api.get<UserRow[]>("/admin/users/"),
         api.get<DistrictOption[]>("/districts/", { params: { is_active: true } }),
+        api.get<LaboratoryOption[]>("/laboratories/", { params: { is_active: true } }),
       ]);
       setUsers(usersRes.data ?? []);
       setDistricts(districtsRes.data ?? []);
+      setLaboratories(laboratoriesRes.data ?? []);
     } catch (error) {
       logError("Foydalanuvchilarni yuklashda xatolik:", error);
     } finally {
@@ -69,9 +75,10 @@ const UsersManager = () => {
         password: form.password,
         role: form.role,
         district_id: form.district_id || null,
+        laboratory_id: form.laboratory_id || null,
       });
       toast({ title: "Muvaffaqiyatli", description: "Foydalanuvchi yaratildi" });
-      setForm({ email: "", password: "", role: "qabul", district_id: "" });
+      setForm({ email: "", password: "", role: "qabul", district_id: "", laboratory_id: "" });
       load();
     } catch (error) {
       logError("Foydalanuvchi yaratishda xatolik:", error);
@@ -109,7 +116,7 @@ const UsersManager = () => {
     <Card>
       <CardHeader>
         <CardTitle className="font-display">Foydalanuvchilar</CardTitle>
-        <CardDescription>Hisob yaratish, rol va tuman biriktirish</CardDescription>
+        <CardDescription>Hisob yaratish, rol va tuman/laboratoriya biriktirish</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {loading ? (
@@ -128,17 +135,31 @@ const UsersManager = () => {
                     {ROLE_OPTIONS.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
-                <Select
-                  value={u.district_id ?? NO_DISTRICT}
-                  onValueChange={(v) => updateUser(u.id, { district_id: v === NO_DISTRICT ? null : v })}
-                  disabled={savingId === u.id}
-                >
-                  <SelectTrigger className="sm:col-span-3"><SelectValue placeholder="Tuman yo'q" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NO_DISTRICT}>Tuman biriktirilmagan</SelectItem>
-                    {districts.map((d) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                {u.role === "laborant" ? (
+                  <Select
+                    value={u.laboratory_id ?? NO_DISTRICT}
+                    onValueChange={(v) => updateUser(u.id, { laboratory_id: v === NO_DISTRICT ? null : v })}
+                    disabled={savingId === u.id}
+                  >
+                    <SelectTrigger className="sm:col-span-3"><SelectValue placeholder="Laboratoriya yo'q" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NO_DISTRICT}>Laboratoriya biriktirilmagan</SelectItem>
+                      {laboratories.map((l) => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Select
+                    value={u.district_id ?? NO_DISTRICT}
+                    onValueChange={(v) => updateUser(u.id, { district_id: v === NO_DISTRICT ? null : v })}
+                    disabled={savingId === u.id}
+                  >
+                    <SelectTrigger className="sm:col-span-3"><SelectValue placeholder="Tuman yo'q" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NO_DISTRICT}>Tuman biriktirilmagan</SelectItem>
+                      {districts.map((d) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
                 <Button
                   size="sm"
                   variant="outline"
@@ -178,17 +199,30 @@ const UsersManager = () => {
               </Select>
             </div>
             <div className="sm:col-span-2 space-y-2">
-              <Label>Tuman</Label>
-              <Select
-                value={form.district_id || NO_DISTRICT}
-                onValueChange={(v) => setForm({ ...form, district_id: v === NO_DISTRICT ? "" : v })}
-              >
-                <SelectTrigger><SelectValue placeholder="Tanlang" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NO_DISTRICT}>—</SelectItem>
-                  {districts.map((d) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Label>{form.role === "laborant" ? "Laboratoriya" : "Tuman"}</Label>
+              {form.role === "laborant" ? (
+                <Select
+                  value={form.laboratory_id || NO_DISTRICT}
+                  onValueChange={(v) => setForm({ ...form, laboratory_id: v === NO_DISTRICT ? "" : v })}
+                >
+                  <SelectTrigger><SelectValue placeholder="Tanlang" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NO_DISTRICT}>—</SelectItem>
+                    {laboratories.map((l) => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Select
+                  value={form.district_id || NO_DISTRICT}
+                  onValueChange={(v) => setForm({ ...form, district_id: v === NO_DISTRICT ? "" : v })}
+                >
+                  <SelectTrigger><SelectValue placeholder="Tanlang" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NO_DISTRICT}>—</SelectItem>
+                    {districts.map((d) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
           <Button onClick={createUser} disabled={creating} className="gap-2">

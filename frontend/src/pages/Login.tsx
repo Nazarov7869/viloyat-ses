@@ -36,7 +36,11 @@ const Login = () => {
       const me = await fetchMe();
       if (me?.role) {
         localStorage.setItem('adminRole', me.role);
-        const from = location.state?.from?.pathname || `/admin/${me.role}`;
+        localStorage.setItem('adminLaboratoryCode', me.laboratory_code ?? '');
+        const from =
+          me.role === 'laborant' && me.laboratory_code
+            ? `/admin/laboratoriya/${me.laboratory_code}`
+            : location.state?.from?.pathname || `/admin/${me.role}`;
         navigate(from, { replace: true });
       } else {
         // User has no admin role
@@ -104,13 +108,19 @@ const Login = () => {
           }
 
           localStorage.setItem('adminRole', data.role);
+          localStorage.setItem('adminLaboratoryCode', data.laboratory_code ?? '');
 
           toast({
             title: "Kirish muvaffaqiyatli",
             description: "Boshqaruv paneliga xush kelibsiz",
           });
 
-          navigate(`/admin/${data.role}`, { replace: true });
+          navigate(
+            data.role === 'laborant' && data.laboratory_code
+              ? `/admin/laboratoriya/${data.laboratory_code}`
+              : `/admin/${data.role}`,
+            { replace: true },
+          );
         } catch (error) {
           toast({
             title: "Xato",

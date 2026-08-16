@@ -6,6 +6,9 @@ export interface AuthMe {
   role: string | null;
   district_id: string | null;
   district_name: string | null;
+  laboratory_id: string | null;
+  laboratory_code: string | null;
+  laboratory_name: string | null;
   is_province: boolean;
 }
 
@@ -15,6 +18,9 @@ interface LoginResponse {
   role: string | null;
   district_id: string | null;
   district_name: string | null;
+  laboratory_id: string | null;
+  laboratory_code: string | null;
+  laboratory_name: string | null;
 }
 
 export async function login(email: string, password: string): Promise<LoginResponse> {

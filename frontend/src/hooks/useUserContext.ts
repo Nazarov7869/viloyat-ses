@@ -9,6 +9,9 @@ export interface UserContext {
   role: string | null;
   districtId: string | null;
   districtName: string | null;
+  laboratoryId: string | null;
+  laboratoryCode: string | null;
+  laboratoryName: string | null;
   isProvince: boolean;
   reload: () => void;
 }
@@ -20,6 +23,9 @@ const initialState = {
   role: null,
   districtId: null,
   districtName: null,
+  laboratoryId: null,
+  laboratoryCode: null,
+  laboratoryName: null,
   isProvince: false,
 };
 
@@ -38,6 +44,9 @@ export const useUserContext = (): UserContext => {
               role: me.role,
               districtId: me.district_id,
               districtName: me.district_name,
+              laboratoryId: me.laboratory_id,
+              laboratoryCode: me.laboratory_code,
+              laboratoryName: me.laboratory_name,
               isProvince: me.is_province,
             }
           : { ...initialState, loading: false },
