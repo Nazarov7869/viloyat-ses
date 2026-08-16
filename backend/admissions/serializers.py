@@ -60,9 +60,16 @@ class LabOrderDetailSerializer(LabOrderSerializer):
 
     clients = serializers.SerializerMethodField()
     admissions = serializers.SerializerMethodField()
+    conclusion_template = serializers.SerializerMethodField()
 
     class Meta(LabOrderSerializer.Meta):
-        fields = LabOrderSerializer.Meta.fields + ['clients', 'admissions']
+        fields = LabOrderSerializer.Meta.fields + ['clients', 'admissions', 'conclusion_template']
+
+    def get_conclusion_template(self, obj):
+        item = obj.admission_item
+        if item and item.service:
+            return item.service.conclusion_template
+        return ''
 
     def get_clients(self, obj):
         c = obj.client

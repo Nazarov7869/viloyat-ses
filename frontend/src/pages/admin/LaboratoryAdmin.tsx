@@ -20,6 +20,10 @@ const POLL_INTERVAL_MS = 20000;
 import { cn } from "@/lib/utils";
 import { LAB_STATUSES, formatSum, labStatusLabel, paymentStatusLabel } from "@/lib/ses";
 import { ConclusionBlank } from "@/components/lab/ConclusionBlank";
+import { BrutsellozIfaBlank } from "@/components/lab/BrutsellozIfaBlank";
+import { TrichomonasCandidaBlank } from "@/components/lab/TrichomonasCandidaBlank";
+import { EchinokokkBlank } from "@/components/lab/EchinokokkBlank";
+import { BrutsellozSerologicalBlank } from "@/components/lab/BrutsellozSerologicalBlank";
 
 interface LabOrderFull {
   id: string;
@@ -29,6 +33,7 @@ interface LabOrderFull {
   result_text: string | null;
   approved_by: string | null;
   operator_name: string | null;
+  conclusion_template: string;
   created_at: string;
   client_id: string;
   clients: { first_name: string; last_name: string; phone: string | null; pinfl: string | null; address: string; birth_year: string | null } | null;
@@ -258,14 +263,32 @@ const LaboratoryAdmin = () => {
                 <Textarea rows={4} value={resultText} onChange={(e) => setResultText(e.target.value)} placeholder="Natijani kiriting" />
               </div>
 
-              <ConclusionBlank
-                labName={labName}
-                clientName={`${active.clients?.last_name ?? ""} ${active.clients?.first_name ?? ""}`.trim()}
-                birthYear={active.clients?.birth_year ?? ""}
-                address={active.clients?.address ?? ""}
-                analysisName={active.service_name}
-                conclusion={resultText}
-              />
+              {(() => {
+                const clientName = `${active.clients?.last_name ?? ""} ${active.clients?.first_name ?? ""}`.trim();
+                const birthYear = active.clients?.birth_year ?? "";
+                const address = active.clients?.address ?? "";
+                switch (active.conclusion_template) {
+                  case "brutselloz_ifa":
+                    return <BrutsellozIfaBlank clientName={clientName} birthYear={birthYear} address={address} />;
+                  case "trichomonas_candida_ifa":
+                    return <TrichomonasCandidaBlank clientName={clientName} birthYear={birthYear} address={address} />;
+                  case "echinokokk_ifa":
+                    return <EchinokokkBlank clientName={clientName} birthYear={birthYear} address={address} />;
+                  case "brutselloz_serological":
+                    return <BrutsellozSerologicalBlank clientName={clientName} birthYear={birthYear} address={address} />;
+                  default:
+                    return (
+                      <ConclusionBlank
+                        labName={labName}
+                        clientName={clientName}
+                        birthYear={birthYear}
+                        address={address}
+                        analysisName={active.service_name}
+                        conclusion={resultText}
+                      />
+                    );
+                }
+              })()}
             </div>
           )}
           <DialogFooter className="gap-2">

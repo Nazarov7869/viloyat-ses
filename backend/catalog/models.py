@@ -70,10 +70,22 @@ class Laboratory(TimeStampedUUIDModel):
 
 
 class Service(TimeStampedUUIDModel):
+    CONCLUSION_TEMPLATE_CHOICES = [
+        ('', "Umumiy (standart) xulosa blankasi"),
+        ('brutselloz_ifa', "Bruselloz IFA (IgM/IgG)"),
+        ('trichomonas_candida_ifa', "Trichomonas/Candida IFA (IgM/IgG)"),
+        ('echinokokk_ifa', "Exinokokk IFA (IgM/IgG)"),
+        ('brutselloz_serological', "Bruselloz seroligik xulosasi (Heddelson/Rayt)"),
+    ]
+
     name = models.CharField(max_length=300)
     service_type = models.CharField(max_length=200, default='Laboratoriya tekshiruvi')
     sample_type = models.CharField(max_length=200, default='Namuna')
     price = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    conclusion_template = models.CharField(
+        max_length=50, choices=CONCLUSION_TEMPLATE_CHOICES, default='', blank=True,
+        help_text="Bo'sh = umumiy xulosa blankasi ishlatiladi.",
+    )
     laboratory = models.ForeignKey(
         Laboratory, null=True, blank=True, on_delete=models.SET_NULL, related_name='services'
     )

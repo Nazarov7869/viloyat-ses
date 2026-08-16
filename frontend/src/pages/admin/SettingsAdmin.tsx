@@ -11,10 +11,12 @@ import { useToast } from "@/hooks/use-toast";
 import { logError } from "@/lib/logger";
 import { useCatalog } from "@/hooks/useCatalog";
 import UsersManager from "@/components/UsersManager";
+import { CONCLUSION_TEMPLATES } from "@/lib/ses";
 
 const ALL_LABS = "__all_labs__";
 const ALL_DISTRICTS = "__all_districts__";
 const UNIVERSAL_DISTRICT = "__universal__";
+const GENERIC_TEMPLATE = "__generic__";
 
 const SettingsAdmin = () => {
   const { toast } = useToast();
@@ -25,7 +27,7 @@ const SettingsAdmin = () => {
   const [districtFilter, setDistrictFilter] = useState(ALL_DISTRICTS);
   const [newService, setNewService] = useState({
     name: "", service_type: "Laboratoriya tekshiruvi", sample_type: "Namuna", price: "0",
-    laboratory_id: "", district_id: UNIVERSAL_DISTRICT,
+    laboratory_id: "", district_id: UNIVERSAL_DISTRICT, conclusion_template: GENERIC_TEMPLATE,
   });
 
   const saveLab = async (id: string) => {
@@ -46,7 +48,10 @@ const SettingsAdmin = () => {
 
   const saveService = async (
     id: string,
-    patch: { name?: string; sample_type?: string; price?: number; laboratory_id?: string; district_id?: string | null },
+    patch: {
+      name?: string; sample_type?: string; price?: number; laboratory_id?: string;
+      district_id?: string | null; conclusion_template?: string;
+    },
   ) => {
     setSavingId(id);
     try {
@@ -75,10 +80,11 @@ const SettingsAdmin = () => {
         price: Number(newService.price) || 0,
         laboratory_id: newService.laboratory_id,
         district_id: newService.district_id === UNIVERSAL_DISTRICT ? null : newService.district_id,
+        conclusion_template: newService.conclusion_template === GENERIC_TEMPLATE ? "" : newService.conclusion_template,
       });
       setNewService({
         name: "", service_type: "Laboratoriya tekshiruvi", sample_type: "Namuna", price: "0",
-        laboratory_id: "", district_id: UNIVERSAL_DISTRICT,
+        laboratory_id: "", district_id: UNIVERSAL_DISTRICT, conclusion_template: GENERIC_TEMPLATE,
       });
       toast({ title: "Qo'shildi", description: "Yangi analiz qo'shildi" });
       reload();
@@ -196,6 +202,20 @@ const SettingsAdmin = () => {
                   <Button size="icon" variant="ghost" className="sm:col-span-1 justify-self-end" onClick={() => removeService(s.id)}>
                     <Trash2 className="w-4 h-4 text-destructive" />
                   </Button>
+                  <div className="sm:col-span-12 flex items-center gap-2">
+                    <Label className="text-xs text-muted-foreground whitespace-nowrap">Xulosa shabloni</Label>
+                    <Select
+                      value={s.conclusion_template || GENERIC_TEMPLATE}
+                      onValueChange={(v) => saveService(s.id, { conclusion_template: v === GENERIC_TEMPLATE ? "" : v })}
+                    >
+                      <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {CONCLUSION_TEMPLATES.map((t) => (
+                          <SelectItem key={t.value || GENERIC_TEMPLATE} value={t.value || GENERIC_TEMPLATE}>{t.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               ))}
               {filteredServices.length === 0 && (
@@ -234,6 +254,20 @@ const SettingsAdmin = () => {
                     <SelectContent>
                       <SelectItem value={UNIVERSAL_DISTRICT}>Umumiy (barcha tumanlar)</SelectItem>
                       {districts.map((d) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="sm:col-span-4 space-y-2">
+                  <Label>Xulosa shabloni</Label>
+                  <Select
+                    value={newService.conclusion_template}
+                    onValueChange={(v) => setNewService({ ...newService, conclusion_template: v })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {CONCLUSION_TEMPLATES.map((t) => (
+                        <SelectItem key={t.value || GENERIC_TEMPLATE} value={t.value || GENERIC_TEMPLATE}>{t.label}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

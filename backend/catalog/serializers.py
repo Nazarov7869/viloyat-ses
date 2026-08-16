@@ -33,6 +33,7 @@ class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
         fields = [
-            'id', 'name', 'service_type', 'sample_type', 'price', 'laboratory_id',
-            'district_id', 'district_name', 'is_active', 'sort_order', 'created_at', 'updated_at',
+            'id', 'name', 'service_type', 'sample_type', 'price', 'conclusion_template',
+            'laboratory_id', 'district_id', 'district_name', 'is_active', 'sort_order',
+            'created_at', 'updated_at',
         ]

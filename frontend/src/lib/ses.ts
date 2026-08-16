@@ -75,11 +75,20 @@ export interface ServiceRow {
   service_type: string;
   sample_type: string;
   price: number;
+  conclusion_template: string;
   laboratory_id: string | null;
   district_id: string | null;
   district_name?: string | null;
   is_active: boolean;
 }
+
+export const CONCLUSION_TEMPLATES = [
+  { value: "", label: "Umumiy (standart) xulosa blankasi" },
+  { value: "brutselloz_ifa", label: "Bruselloz IFA (IgM/IgG)" },
+  { value: "trichomonas_candida_ifa", label: "Trichomonas/Candida IFA (IgM/IgG)" },
+  { value: "echinokokk_ifa", label: "Exinokokk IFA (IgM/IgG)" },
+  { value: "brutselloz_serological", label: "Bruselloz seroligik xulosasi (Heddelson/Rayt)" },
+] as const;
 
 export const ROLE_OPTIONS = [
   { value: "main", label: "Bosh admin" },
