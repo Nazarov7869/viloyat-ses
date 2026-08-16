@@ -201,7 +201,7 @@ const AdminLayout = ({ children, title, subtitle }: AdminLayoutProps) => {
             </Link>
           ))}
 
-          {adminRole !== "viloyat" && visibleLaboratories.length > 0 && (
+          {(adminRole === "main" || adminRole === "laborant") && visibleLaboratories.length > 0 && (
             <div className="pt-2">
               {sidebarOpen && (
                 <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-sidebar-foreground/50">
