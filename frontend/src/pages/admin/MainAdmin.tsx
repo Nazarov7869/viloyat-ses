@@ -130,7 +130,7 @@ const MainAdmin = () => {
   });
 
 
-  const dailyTotal = dailyPayments.reduce((sum, client) => sum + (client.payment_amount || 0), 0);
+  const dailyTotal = dailyPayments.reduce((sum, client) => sum + Number(client.payment_amount || 0), 0);
 
   // Monthly payments (selected month)
   const monthlyPayments = paidClients.filter(client => {
@@ -139,7 +139,7 @@ const MainAdmin = () => {
     return paymentDate.getMonth() === selectedMonth && paymentDate.getFullYear() === selectedYear;
   });
 
-  const monthlyTotal = monthlyPayments.reduce((sum, client) => sum + (client.payment_amount || 0), 0);
+  const monthlyTotal = monthlyPayments.reduce((sum, client) => sum + Number(client.payment_amount || 0), 0);
 
   // Yearly payments (selected year)
   const yearlyPayments = paidClients.filter(client => {
@@ -148,10 +148,10 @@ const MainAdmin = () => {
     return paymentDate.getFullYear() === selectedYear;
   });
 
-  const yearlyTotal = yearlyPayments.reduce((sum, client) => sum + (client.payment_amount || 0), 0);
+  const yearlyTotal = yearlyPayments.reduce((sum, client) => sum + Number(client.payment_amount || 0), 0);
 
   // Total all time
-  const totalAllTime = paidClients.reduce((sum, client) => sum + (client.payment_amount || 0), 0);
+  const totalAllTime = paidClients.reduce((sum, client) => sum + Number(client.payment_amount || 0), 0);
 
   // Payments by service type
   const groupItems = (items: PaidItem[]) => {

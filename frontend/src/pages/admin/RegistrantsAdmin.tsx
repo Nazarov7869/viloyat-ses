@@ -150,7 +150,7 @@ const RegistrantsAdmin = () => {
     },
     { 
       label: "Jami to'lovlar", 
-      value: `${clients.reduce((sum, c) => sum + (c.payment_amount || 0), 0).toLocaleString()} so'm`, 
+      value: `${clients.reduce((sum, c) => sum + Number(c.payment_amount || 0), 0).toLocaleString()} so'm`,
       change: "+15%", 
       trend: "up",
       icon: DollarSign,
@@ -295,7 +295,7 @@ const RegistrantsAdmin = () => {
                         <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <DollarSign className="w-3 h-3" />
-                            To'langan: {(client.payment_amount || 0).toLocaleString()} so'm
+                            To'langan: {Number(client.payment_amount || 0).toLocaleString()} so'm
                           </span>
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
@@ -358,7 +358,7 @@ const RegistrantsAdmin = () => {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">To'lov summasi</p>
-                  <p className="font-medium">{(selectedClient.payment_amount || 0).toLocaleString()} so'm</p>
+                  <p className="font-medium">{Number(selectedClient.payment_amount || 0).toLocaleString()} so'm</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">To'lov sanasi</p>
