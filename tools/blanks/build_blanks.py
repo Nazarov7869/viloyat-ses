@@ -288,17 +288,27 @@ def table_cell_fields(page, pno):
     fields, table_boxes = [], []
     for table in page.find_tables():
         table_boxes.append(table.bbox)
+        texts = {}
+        for cell in table.cells:
+            x0, top, x1, bottom = cell
+            inside = page.crop((x0 + 0.5, top + 0.5, x1 - 0.5, bottom - 0.5), strict=False)
+            texts[cell] = re.sub(r"\s+", " ", inside.extract_text() or "").strip()
         for cell in table.cells:
             x0, top, x1, bottom = cell
             w, h = x1 - x0, bottom - top
-            if w < 12 or h < 8:
+            if w < 12 or h < 8 or texts[cell]:
                 continue
-            inside = page.crop((x0 + 0.5, top + 0.5, x1 - 0.5, bottom - 0.5), strict=False)
-            if inside.extract_text().strip():
-                continue
+            # Yorliq — shu qatordagi chap qo'shni katak matni (masalan "Ф. И. О." | [   ])
+            label = ""
+            for other in table.cells:
+                ox0, otop, ox1, obottom = other
+                overlap = min(bottom, obottom) - max(top, otop)
+                if abs(ox1 - x0) < 2.5 and overlap > 0.5 * h and texts[other]:
+                    label = texts[other][-60:]
+                    break
             fields.append({
                 "page": pno, "x": x0 + 1.5, "y": top + 1, "w": w - 3, "h": h - 2,
-                "kind": "cell", "label": "", "fs": min(11.0, max(8.0, h - 4)),
+                "kind": "cell", "label": label, "fs": min(11.0, max(8.0, h - 4)),
                 "underline": False,
             })
     return fields, table_boxes
@@ -514,7 +524,7 @@ def autofill_key(field):
     if NOT_PATIENT.search(label):
         return None
     for key, pattern in AUTOFILL_RULES:
-        if re.search(pattern + r"\w*[\s:.,]*$", label, flags=re.IGNORECASE):
+        if re.search(pattern + r"\w*[\s:.,]*(\([^)]*\))?[\s:.,]*$", label, flags=re.IGNORECASE):
             return key
     return None
 
@@ -522,9 +532,20 @@ def autofill_key(field):
 def extract_fields(pdf_path: Path, entry: dict, extra_fields):
     fields = []
     page_sizes = []
+    content_boxes = []
     with pdfplumber.open(pdf_path) as pdf:
         for pno, page in enumerate(pdf.pages):
             page_sizes.append((float(page.width), float(page.height)))
+            objs = [c for c in page.chars if c["text"].strip()] + list(page.lines) + list(page.rects)
+            if objs:
+                content_boxes.append([
+                    round(max(0.0, min(o["x0"] for o in objs)) - 2, 1),
+                    round(max(0.0, min(o["top"] for o in objs)) - 2, 1),
+                    round(min(float(page.width), max(o["x1"] for o in objs)) + 2, 1),
+                    round(min(float(page.height), max(o["bottom"] for o in objs)) + 2, 1),
+                ])
+            else:
+                content_boxes.append([0, 0, round(float(page.width), 1), round(float(page.height), 1)])
             cells, table_boxes = table_cell_fields(page, pno)
             lines = underscore_fields(page, pno)
             rules = blank_rule_fields(page, pno, table_boxes)
@@ -563,7 +584,7 @@ def extract_fields(pdf_path: Path, entry: dict, extra_fields):
         owner.setdefault(auto, f["name"])
         if owner[auto] != f["name"]:
             del f["auto"]
-    return fields, page_sizes
+    return fields, page_sizes, content_boxes
 
 
 # --------------------------------------------------------------------------- #
@@ -600,7 +621,7 @@ def main():
             prepared = prepare_source(entry, workdir)
             pdf = to_pdf(prepared, workdir)
             selected, extra = select_and_redact(pdf, entry, workdir)
-            fields, sizes = extract_fields(selected, entry, extra)
+            fields, sizes, boxes = extract_fields(selected, entry, extra)
             images = render_pages(selected, key, len(sizes))
             manifest["templates"].append({
                 "key": key,
@@ -608,7 +629,10 @@ def main():
                 "form": entry.get("form", ""),
                 "labs": entry.get("labs", []),
                 "source": entry["source"],
-                "pages": [{"w": round(w, 1), "h": round(h, 1), "src": src} for (w, h), src in zip(sizes, images)],
+                "pages": [
+                    {"w": round(w, 1), "h": round(h, 1), "src": src, "box": box}
+                    for (w, h), src, box in zip(sizes, images, boxes)
+                ],
                 "fields": fields,
             })
             print(f"  {key:28s} {len(sizes)} sahifa, {len(fields):3d} maydon  <- {entry['source']}")

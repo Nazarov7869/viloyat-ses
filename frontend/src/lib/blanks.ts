@@ -28,6 +28,8 @@ export interface BlankPage {
   w: number;
   h: number;
   src: string;
+  /** Sahifadagi matn/chiziqlar egallagan joy [x0, y0, x1, y1], pt */
+  box?: [number, number, number, number];
 }
 
 export interface BlankTemplate {
@@ -141,19 +143,48 @@ const escapeHtml = (s: string) =>
 
 export const FIELD_FONT = `"Times New Roman", "Liberation Serif", Times, serif`;
 
+export const isLandscape = (template: BlankTemplate) => template.pages.every((p) => p.w > p.h);
+
+export interface PrintOptions {
+  /**
+   * Albom (landscape) blankani A4 kitob varag'iga 2 nusxa qilib chiqarish —
+   * qog'ozdagi blankalar shunday bosiladi (yuqori va pastki nusxa).
+   */
+  twoUp?: boolean;
+}
+
+const A4_W = 595.3;
+const A4_H = 841.9;
+
 /** Blankani asl ko'rinishida (sahifa o'lchamida) chop etish. */
-export const printBlank = (template: BlankTemplate, values: BlankValues, title = template.title) => {
-  const size = template.pages[0];
+export const printBlank = (template: BlankTemplate, values: BlankValues, title = template.title, options: PrintOptions = {}) => {
+  const twoUp = !!options.twoUp && isLandscape(template);
+  const size = twoUp ? { w: A4_W, h: A4_H } : template.pages[0];
+  const renderPage = (page: BlankPage, index: number) => {
+    const fields = template.fields
+      .filter((f) => f.page === index && values[f.name])
+      .map(
+        (f) =>
+          `<div class="fld ${f.kind}" style="left:${f.x}pt;top:${f.y}pt;width:${f.w}pt;height:${f.h}pt;font-size:${f.fs}pt">${escapeHtml(values[f.name])}</div>`,
+      )
+      .join("");
+    return `<img src="${blankAssetUrl(page.src)}" alt="" />${fields}`;
+  };
   const pages = template.pages
     .map((page, index) => {
-      const fields = template.fields
-        .filter((f) => f.page === index && values[f.name])
-        .map(
-          (f) =>
-            `<div class="fld ${f.kind}" style="left:${f.x}pt;top:${f.y}pt;width:${f.w}pt;height:${f.h}pt;font-size:${f.fs}pt">${escapeHtml(values[f.name])}</div>`,
-        )
-        .join("");
-      return `<section class="page" style="width:${page.w}pt;height:${page.h}pt"><img src="${blankAssetUrl(page.src)}" alt="" />${fields}</section>`;
+      if (!twoUp) {
+        return `<section class="page" style="width:${page.w}pt;height:${page.h}pt">${renderPage(page, index)}</section>`;
+      }
+      // Bo'sh chetlarni kesib, nusxani yarim varaqqa (chetdan 28pt qoldirib) sig'diramiz
+      const [bx0, by0, bx1, by1] = page.box ?? [0, 0, page.w, page.h];
+      const margin = 28;
+      const scale = Math.min((A4_W - 2 * margin) / (bx1 - bx0), (A4_H / 2 - 2 * margin) / (by1 - by0));
+      const copy = (top: number) => {
+        const left = (A4_W - (bx1 - bx0) * scale) / 2 - bx0 * scale;
+        const offsetTop = top + margin - by0 * scale;
+        return `<div class="copy" style="top:${offsetTop}pt;left:${left}pt;width:${page.w}pt;height:${page.h}pt;transform:scale(${scale})">${renderPage(page, index)}</div>`;
+      };
+      return `<section class="page" style="width:${A4_W}pt;height:${A4_H}pt">${copy(0)}${copy(A4_H / 2)}<div class="cut"></div></section>`;
     })
     .join("");
 
@@ -162,9 +193,11 @@ export const printBlank = (template: BlankTemplate, values: BlankValues, title =
   @page { size: ${size.w}pt ${size.h}pt; margin: 0; }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; background: #fff; }
-  .page { position: relative; overflow: hidden; page-break-after: always; break-after: page; }
+  .page { position: relative; overflow: hidden; background: #fff; page-break-after: always; break-after: page; }
   .page:last-child { page-break-after: auto; break-after: auto; }
-  .page img { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .page > img, .copy > img { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .copy { position: absolute; transform-origin: top left; }
+  .cut { position: absolute; left: 0; right: 0; top: ${A4_H / 2}pt; border-top: 0.5pt dashed #bbb; }
   .fld { position: absolute; font-family: ${FIELD_FONT}; color: #000; line-height: 1.05; overflow: hidden; }
   .fld.line { white-space: nowrap; display: flex; align-items: flex-end; padding: 0 2pt 1pt; }
   .fld.cell { white-space: pre-wrap; word-break: break-word; padding: 1pt 2pt; display: flex; align-items: center; justify-content: center; text-align: center; }

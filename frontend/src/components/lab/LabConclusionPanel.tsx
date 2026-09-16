@@ -9,6 +9,7 @@ import {
   GENERIC_TEMPLATE_KEY,
   GENERIC_TEMPLATE_TITLE,
   applyAutofill,
+  isLandscape,
   printBlank,
   templateTitle,
   templatesForLab,
@@ -112,6 +113,18 @@ export const LabConclusionPanel = ({ lab, templateKey, values, autofill, resultT
             <Button type="button" size="sm" className="gap-2" onClick={() => printBlank(template, values, `${template.title} — ${autofill.client_name}`)}>
               <Printer className="h-4 w-4" /> Chop etish
             </Button>
+            {isLandscape(template) && (
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                className="gap-2"
+                title="Qog'ozdagi kabi: A4 varaqning yuqori va pastki qismida ikkita nusxa"
+                onClick={() => printBlank(template, values, `${template.title} — ${autofill.client_name}`, { twoUp: true })}
+              >
+                <Printer className="h-4 w-4" /> A4 ga 2 nusxa
+              </Button>
+            )}
           </div>
         )}
       </div>
