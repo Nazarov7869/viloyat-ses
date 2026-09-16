@@ -32,6 +32,18 @@ class AdmissionItemSerializer(serializers.ModelSerializer):
             'id', 'admission_id', 'service_id', 'service_name', 'sample_type', 'price',
             'quantity', 'laboratory_id', 'district_id', 'created_at',
         ]
+        # Narx, miqdor va xizmat faqat qabul yaratilganda serverda belgilanadi;
+        # keyin faqat laboratoriyani o'zgartirish mumkin.
+        read_only_fields = [
+            'admission_id', 'service_id', 'service_name', 'sample_type', 'price',
+            'quantity', 'district_id', 'created_at',
+        ]
+
+    def get_fields(self):
+        fields = super().get_fields()
+        for name in self.Meta.read_only_fields:
+            fields[name].read_only = True
+        return fields
 
 
 class LabOrderSerializer(serializers.ModelSerializer):
@@ -69,10 +81,22 @@ class LabOrderDetailSerializer(LabOrderSerializer):
 
     clients = serializers.SerializerMethodField()
     admissions = serializers.SerializerMethodField()
+    item = serializers.SerializerMethodField()
     default_conclusion_template = serializers.SerializerMethodField()
 
     class Meta(LabOrderSerializer.Meta):
-        fields = LabOrderSerializer.Meta.fields + ['clients', 'admissions', 'default_conclusion_template']
+        fields = LabOrderSerializer.Meta.fields + ['clients', 'admissions', 'item', 'default_conclusion_template']
+
+    def get_item(self, obj):
+        """Shu buyurtmaning o'z analizi narxi (qabul vaqtidagi narx, miqdor bilan)."""
+        item = obj.admission_item
+        if not item:
+            return None
+        return {
+            'price': str(item.price),
+            'quantity': item.quantity,
+            'amount': str(item.price * item.quantity),
+        }
 
     def get_default_conclusion_template(self, obj):
         """Xizmat (analiz) uchun admin panelda belgilangan blanka."""
@@ -126,10 +150,11 @@ class LabOrderDetailSerializer(LabOrderSerializer):
 
     def get_admissions(self, obj):
         a = obj.admission
+        # Qabulning umumiy summasi (boshqa laboratoriyalar analizlari bilan birga)
+        # laboratoriyaga berilmaydi — u shu analiz narxi deb noto'g'ri ko'rinardi.
         return {
             'order_number': a.order_number,
             'payment_status': a.payment_status,
-            'total_amount': a.total_amount,
         }
 
 
@@ -185,16 +210,41 @@ class NewClientInputSerializer(serializers.Serializer):
 
 
 class NewAdmissionItemInputSerializer(serializers.Serializer):
-    service_id = serializers.PrimaryKeyRelatedField(queryset=Service.objects.all())
-    quantity = serializers.IntegerField(min_value=1, default=1)
+    service_id = serializers.PrimaryKeyRelatedField(queryset=Service.objects.filter(is_active=True))
+    quantity = serializers.IntegerField(min_value=1, max_value=100, default=1)
+    # Qabul oynasida ko'rsatilgan narx. Berilgan bo'lsa va katalogdagi narxdan farq
+    # qilsa (admin narxni o'zgartirgan), qabul saqlanmaydi — kassir yangilashi kerak.
+    expected_price = serializers.DecimalField(
+        max_digits=14, decimal_places=2, required=False, allow_null=True, min_value=Decimal('0'),
+    )
 
 
 class AdmissionCreateSerializer(serializers.Serializer):
     client = NewClientInputSerializer()
     items = NewAdmissionItemInputSerializer(many=True, allow_empty=False)
-    discount_amount = serializers.DecimalField(max_digits=14, decimal_places=2, default=0)
-    paid_amount = serializers.DecimalField(max_digits=14, decimal_places=2, default=0)
+    discount_amount = serializers.DecimalField(
+        max_digits=14, decimal_places=2, default=0, min_value=Decimal('0'),
+    )
+    paid_amount = serializers.DecimalField(
+        max_digits=14, decimal_places=2, default=0, min_value=Decimal('0'),
+    )
     payment_method = serializers.CharField(max_length=30, default='naqd')
+
+    def validate(self, attrs):
+        subtotal = sum(i['service_id'].price * i['quantity'] for i in attrs['items'])
+        discount = attrs.get('discount_amount') or Decimal('0')
+        if discount > subtotal:
+            raise serializers.ValidationError(
+                {'discount_amount': "Chegirma analizlar summasidan katta bo'lishi mumkin emas."}
+            )
+        total = subtotal - discount
+        if (attrs.get('paid_amount') or Decimal('0')) > total:
+            raise serializers.ValidationError(
+                {'paid_amount': f"To'langan summa jami summadan ({total:,.0f} so'm) ko'p bo'lishi mumkin emas."}
+            )
+        attrs['subtotal'] = subtotal
+        attrs['total'] = total
+        return attrs
 
 
 class AddPaymentSerializer(serializers.Serializer):

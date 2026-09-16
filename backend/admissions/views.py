@@ -4,7 +4,7 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -33,6 +33,9 @@ from .serializers import (
 class AdmissionViewSet(DistrictScopedMixin, viewsets.ModelViewSet):
     serializer_class = AdmissionSerializer
     filterset_fields = ['payment_status', 'process_status']
+    # Summalar faqat create() va add-payment orqali o'zgaradi: to'g'ridan-to'g'ri
+    # PATCH/PUT/DELETE bilan jami yoki to'langan summani buzib bo'lmasin.
+    http_method_names = ['get', 'post', 'head', 'options']
     queryset = (
         Admission.objects.select_related('client', 'district')
         .prefetch_related('items', 'lab_orders')
@@ -64,9 +67,22 @@ class AdmissionViewSet(DistrictScopedMixin, viewsets.ModelViewSet):
                     f"\"{item['service_id'].name}\" xizmati sizning tumaningizda mavjud emas."
                 )
 
-        subtotal = sum(item['service_id'].price * item['quantity'] for item in items_data)
+        changed = [
+            item['service_id'] for item in items_data
+            if item.get('expected_price') is not None and item['expected_price'] != item['service_id'].price
+        ]
+        if changed:
+            names = ', '.join(
+                f"\"{s.name}\" (hozirgi narx: {s.price:,.0f} so'm)" for s in changed
+            )
+            return Response(
+                {'detail': f"Analiz narxi o'zgargan: {names}. Sahifani yangilab, qabulni qaytadan tekshiring.",
+                 'code': 'price_changed'},
+                status=409,
+            )
+
         discount = data['discount_amount']
-        total = max(subtotal - discount, 0)
+        total = data['total']
         paid = data['paid_amount']
         payment_status = 'tolanmagan' if paid <= 0 else ('tolangan' if paid >= total else 'qisman')
 
@@ -162,6 +178,14 @@ class AdmissionViewSet(DistrictScopedMixin, viewsets.ModelViewSet):
         user = request.user
 
         with transaction.atomic():
+            admission = Admission.objects.select_for_update().get(pk=admission.pk)
+            remaining = admission.total_amount - admission.paid_amount
+            if remaining <= 0:
+                raise ValidationError({'amount': "Bu qabul to'liq to'langan."})
+            if amount > remaining:
+                raise ValidationError(
+                    {'amount': f"To'lov qoldiqdan ({remaining:,.0f} so'm) ko'p bo'lishi mumkin emas."}
+                )
             Payment.objects.create(
                 admission=admission,
                 district=admission.district,
@@ -193,6 +217,15 @@ class AdmissionItemViewSet(DistrictScopedMixin, viewsets.ModelViewSet):
     queryset = AdmissionItem.objects.select_related('admission', 'service', 'laboratory', 'district').all()
     serializer_class = AdmissionItemSerializer
     http_method_names = ['get', 'patch', 'head', 'options']
+
+    def perform_update(self, serializer):
+        # Analiz boshqa laboratoriyaga o'tkazilsa, uning ish buyurtmasi ham birga ko'chadi
+        with transaction.atomic():
+            item = serializer.save()
+            if item.laboratory_id:
+                LabOrder.objects.filter(admission_item=item).exclude(
+                    laboratory_id=item.laboratory_id
+                ).update(laboratory_id=item.laboratory_id, updated_at=timezone.now())
 
 
 class LabOrderViewSet(viewsets.ModelViewSet):

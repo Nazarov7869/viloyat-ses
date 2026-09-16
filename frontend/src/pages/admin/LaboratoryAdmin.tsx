@@ -39,8 +39,17 @@ interface LabOrderFull {
   created_at: string;
   client_id: string;
   clients: { first_name: string; last_name: string; phone: string | null; pinfl: string | null; address: string; birth_year: string | null } | null;
-  admissions: { order_number: string; payment_status: string; total_amount: number } | null;
+  admissions: { order_number: string; payment_status: string } | null;
+  /** Shu analizning o'z narxi (qabul vaqtidagi) */
+  item: { price: string; quantity: number; amount: string } | null;
 }
+
+const itemPriceLabel = (item: LabOrderFull["item"]) => {
+  if (!item) return "—";
+  return item.quantity > 1
+    ? `${formatSum(Number(item.amount))} (${item.quantity} × ${formatSum(Number(item.price))})`
+    : formatSum(Number(item.amount));
+};
 
 const LaboratoryAdmin = () => {
   const { code } = useParams();
@@ -258,6 +267,7 @@ const LaboratoryAdmin = () => {
                       <th className="p-3 font-medium">Analiz</th>
                       <th className="p-3 font-medium">Namuna</th>
                       <th className="p-3 font-medium">Qabul vaqti</th>
+                      <th className="p-3 font-medium">Narxi</th>
                       <th className="p-3 font-medium">To'lov</th>
                       <th className="p-3 font-medium">Holat</th>
                       <th className="p-3 font-medium text-right">Amal</th>
@@ -270,6 +280,7 @@ const LaboratoryAdmin = () => {
                         <td className="p-3 max-w-[220px]"><span className="line-clamp-2 text-muted-foreground">{o.service_name}</span></td>
                         <td className="p-3 whitespace-nowrap text-muted-foreground">{o.sample_type ?? "—"}</td>
                         <td className="p-3 whitespace-nowrap text-muted-foreground">{format(new Date(o.created_at), "dd.MM.yyyy HH:mm")}</td>
+                        <td className="p-3 whitespace-nowrap">{itemPriceLabel(o.item)}</td>
                         <td className="p-3 whitespace-nowrap">{paymentStatusLabel(o.admissions?.payment_status ?? "tolanmagan")}</td>
                         <td className="p-3 whitespace-nowrap">{statusBadge(o.status)}</td>
                         <td className="p-3 text-right">
@@ -301,7 +312,8 @@ const LaboratoryAdmin = () => {
                 <p><span className="text-muted-foreground">Analiz: </span>{active.service_name}</p>
                 <p><span className="text-muted-foreground">Namuna turi: </span>{active.sample_type ?? "—"}</p>
                 <p><span className="text-muted-foreground">Ro'yxat vaqti: </span>{format(new Date(active.created_at), "dd.MM.yyyy HH:mm")}</p>
-                <p><span className="text-muted-foreground">To'lov: </span>{paymentStatusLabel(active.admissions?.payment_status ?? "")} ({formatSum(active.admissions?.total_amount ?? 0)})</p>
+                <p><span className="text-muted-foreground">Analiz narxi: </span>{itemPriceLabel(active.item)}</p>
+                <p><span className="text-muted-foreground">To'lov holati: </span>{paymentStatusLabel(active.admissions?.payment_status ?? "")}</p>
                 <p><span className="text-muted-foreground">Laboratoriya: </span>{labName}</p>
                 <p><span className="text-muted-foreground">Operator: </span>{active.operator_name ?? "—"}</p>
               </div>
