@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from .blank_templates import is_valid_template
 from .models import District, Laboratory, Service
 
 
@@ -37,3 +38,9 @@ class ServiceSerializer(serializers.ModelSerializer):
             'laboratory_id', 'district_id', 'district_name', 'is_active', 'sort_order',
             'created_at', 'updated_at',
         ]
+
+    def validate_conclusion_template(self, value):
+        value = (value or '').strip()
+        if not is_valid_template(value):
+            raise serializers.ValidationError("Bunday xulosa shabloni mavjud emas.")
+        return value

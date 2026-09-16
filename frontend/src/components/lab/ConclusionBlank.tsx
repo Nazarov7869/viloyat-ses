@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { format } from "date-fns";
 import { Printer, FileSignature } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,15 +13,24 @@ interface Props {
   address: string;
   analysisName: string;
   conclusion: string;
+  /** Saqlanadigan qiymatlar: number, doctor, date */
+  values: Record<string, string>;
+  onChange: (name: string, value: string) => void;
 }
 
-const line = (label: string, value: string) =>
-  `<div class="fld"><span class="lbl">${label}</span><span class="val">${value || "&nbsp;"}</span></div>`;
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-export const ConclusionBlank = ({ labName, clientName, birthYear, address, analysisName, conclusion }: Props) => {
-  const [number, setNumber] = useState("");
-  const [doctor, setDoctor] = useState("");
-  const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
+const line = (label: string, value: string) =>
+  `<div class="fld"><span class="lbl">${label}</span><span class="val">${value ? escapeHtml(value).replace(/\n/g, "<br/>") : "&nbsp;"}</span></div>`;
+
+export const ConclusionBlank = ({ labName, clientName, birthYear, address, analysisName, conclusion, values, onChange }: Props) => {
+  const number = values.number ?? "";
+  const doctor = values.doctor ?? "";
+  const date = values.date ?? format(new Date(), "yyyy-MM-dd");
+  const setNumber = (v: string) => onChange("number", v);
+  const setDoctor = (v: string) => onChange("doctor", v);
+  const setDate = (v: string) => onChange("date", v);
 
   const dateLabel = useMemo(() => {
     try {
@@ -33,15 +42,15 @@ export const ConclusionBlank = ({ labName, clientName, birthYear, address, analy
 
   const handlePrint = () => {
     printHtml(
-      `Xulosa ${number}`,
+      `Xulosa ${escapeHtml(number)}`,
       `<div class="blank">
-        <h1 class="ttl">Jizzax viloyat SES markazi<br/>${labName}</h1>
-        <h2 class="ttl2">Xulosa №${number || "______"}</h2>
+        <h1 class="ttl">Jizzax viloyat SES markazi<br/>${escapeHtml(labName)}</h1>
+        <h2 class="ttl2">Xulosa №${number ? escapeHtml(number) : "______"}</h2>
         ${line("1. F.I.Sh.", clientName)}
         ${line("2. Tug'ilgan yili", birthYear)}
         ${line("3. Yashash manzili", address)}
         ${line("4. Analiz nomi", analysisName)}
-        ${line("5. Laboratoriya xulosasi", (conclusion || "").replace(/\n/g, "<br/>"))}
+        ${line("5. Laboratoriya xulosasi", conclusion || "")}
         ${line("6. Imzo va muhr", doctor)}
         <p class="sub">(vrach F.I.Sh.)</p>
         ${line("7. Xulosa berilgan sana", dateLabel)}

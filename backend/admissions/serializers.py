@@ -1,7 +1,10 @@
 from decimal import Decimal
 
+from django.utils import timezone
+
 from rest_framework import serializers
 
+from catalog.blank_templates import is_valid_template
 from catalog.models import District, Laboratory, Service
 from clients.models import Client
 from clients.serializers import ClientSerializer
@@ -52,7 +55,13 @@ class LabOrderSerializer(serializers.ModelSerializer):
             'id', 'admission_id', 'admission_item_id', 'client_id', 'laboratory_id', 'district_id',
             'service_name', 'sample_type', 'status', 'result_text', 'result_at', 'approved_by',
             'approved_at', 'operator_name', 'created_at', 'updated_at',
+            'conclusion_template', 'conclusion_data', 'conclusion_updated_at',
         ]
+        read_only_fields = ['conclusion_updated_at']
+
+
+MAX_CONCLUSION_FIELDS = 3000
+MAX_CONCLUSION_VALUE = 5000
 
 
 class LabOrderDetailSerializer(LabOrderSerializer):
@@ -60,16 +69,49 @@ class LabOrderDetailSerializer(LabOrderSerializer):
 
     clients = serializers.SerializerMethodField()
     admissions = serializers.SerializerMethodField()
-    conclusion_template = serializers.SerializerMethodField()
+    default_conclusion_template = serializers.SerializerMethodField()
 
     class Meta(LabOrderSerializer.Meta):
-        fields = LabOrderSerializer.Meta.fields + ['clients', 'admissions', 'conclusion_template']
+        fields = LabOrderSerializer.Meta.fields + ['clients', 'admissions', 'default_conclusion_template']
 
-    def get_conclusion_template(self, obj):
+    def get_default_conclusion_template(self, obj):
+        """Xizmat (analiz) uchun admin panelda belgilangan blanka."""
         item = obj.admission_item
         if item and item.service:
             return item.service.conclusion_template
         return ''
+
+    def validate_conclusion_template(self, value):
+        value = (value or '').strip()
+        if not is_valid_template(value):
+            raise serializers.ValidationError("Bunday xulosa shabloni mavjud emas.")
+        return value
+
+    def validate_conclusion_data(self, value):
+        if value in (None, ''):
+            return {}
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("Blanka ma'lumotlari obyekt ko'rinishida bo'lishi kerak.")
+        if len(value) > MAX_CONCLUSION_FIELDS:
+            raise serializers.ValidationError("Blanka maydonlari soni juda ko'p.")
+        clean = {}
+        for key, val in value.items():
+            if not isinstance(key, str) or len(key) > 60:
+                raise serializers.ValidationError("Noto'g'ri maydon nomi.")
+            if val is None:
+                continue
+            if not isinstance(val, str):
+                raise serializers.ValidationError(f"'{key}' maydoni matn bo'lishi kerak.")
+            if len(val) > MAX_CONCLUSION_VALUE:
+                raise serializers.ValidationError(f"'{key}' maydoni juda uzun.")
+            if val.strip():
+                clean[key] = val
+        return clean
+
+    def update(self, instance, validated_data):
+        if 'conclusion_data' in validated_data or 'conclusion_template' in validated_data:
+            instance.conclusion_updated_at = timezone.now()
+        return super().update(instance, validated_data)
 
     def get_clients(self, obj):
         c = obj.client

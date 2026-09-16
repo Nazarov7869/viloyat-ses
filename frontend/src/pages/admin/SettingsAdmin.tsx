@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { logError } from "@/lib/logger";
 import { useCatalog } from "@/hooks/useCatalog";
 import UsersManager from "@/components/UsersManager";
-import { CONCLUSION_TEMPLATES } from "@/lib/ses";
+import { GENERIC_TEMPLATE_TITLE, useBlankManifest } from "@/lib/blanks";
 
 const ALL_LABS = "__all_labs__";
 const ALL_DISTRICTS = "__all_districts__";
@@ -19,6 +19,11 @@ const UNIVERSAL_DISTRICT = "__universal__";
 const GENERIC_TEMPLATE = "__generic__";
 
 const SettingsAdmin = () => {
+  const { manifest: blankManifest } = useBlankManifest();
+  const conclusionTemplates = [
+    { value: "", label: GENERIC_TEMPLATE_TITLE },
+    ...(blankManifest?.templates ?? []).map((t) => ({ value: t.key, label: `${t.form ? `${t.form} — ` : ""}${t.title}` })),
+  ];
   const { toast } = useToast();
   const { laboratories, services, districts, loading, reload } = useCatalog();
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -210,7 +215,7 @@ const SettingsAdmin = () => {
                     >
                       <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {CONCLUSION_TEMPLATES.map((t) => (
+                        {conclusionTemplates.map((t) => (
                           <SelectItem key={t.value || GENERIC_TEMPLATE} value={t.value || GENERIC_TEMPLATE}>{t.label}</SelectItem>
                         ))}
                       </SelectContent>
@@ -265,7 +270,7 @@ const SettingsAdmin = () => {
                   >
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {CONCLUSION_TEMPLATES.map((t) => (
+                      {conclusionTemplates.map((t) => (
                         <SelectItem key={t.value || GENERIC_TEMPLATE} value={t.value || GENERIC_TEMPLATE}>{t.label}</SelectItem>
                       ))}
                     </SelectContent>

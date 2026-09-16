@@ -202,11 +202,29 @@ class LabOrderViewSet(viewsets.ModelViewSet):
     assigned laboratory only; other staff stay scoped to their own district.
     """
 
-    queryset = LabOrder.objects.select_related('client', 'admission', 'laboratory', 'district').all()
+    queryset = LabOrder.objects.select_related(
+        'client', 'admission', 'laboratory', 'district', 'admission_item__service',
+    ).all()
     serializer_class = LabOrderDetailSerializer
     permission_classes = [IsProvinceStaffLaborantOrDistrict]
     filterset_fields = ['laboratory', 'status']
     http_method_names = ['get', 'patch', 'head', 'options']
+
+    # Laborant faqat natija va xulosa bilan bog'liq maydonlarni o'zgartira oladi
+    # (buyurtmani boshqa laboratoriya/tumanga ko'chira olmaydi).
+    LABORANT_WRITABLE = {
+        'status', 'result_text', 'result_at', 'approved_by', 'approved_at',
+        'conclusion_template', 'conclusion_data',
+    }
+
+    def partial_update(self, request, *args, **kwargs):
+        if user_role(request.user) == 'laborant' and not is_province(request.user):
+            forbidden = set(request.data.keys()) - self.LABORANT_WRITABLE
+            if forbidden:
+                raise PermissionDenied(
+                    "Laborant quyidagi maydonlarni o'zgartira olmaydi: " + ', '.join(sorted(forbidden))
+                )
+        return super().partial_update(request, *args, **kwargs)
 
     def get_queryset(self):
         qs = super().get_queryset()

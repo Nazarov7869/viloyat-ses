@@ -1,4 +1,7 @@
+from django import forms
 from django.contrib import admin
+
+from .blank_templates import template_choices
 
 from .models import District, DistrictServerConfig, Laboratory, Service
 
@@ -36,8 +39,19 @@ class LaboratoryAdmin(admin.ModelAdmin):
     search_fields = ('name', 'code')
 
 
+class ServiceAdminForm(forms.ModelForm):
+    conclusion_template = forms.ChoiceField(
+        label="Xulosa shabloni", required=False, choices=template_choices,
+    )
+
+    class Meta:
+        model = Service
+        fields = '__all__'
+
+
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
+    form = ServiceAdminForm
     list_display = ('name', 'laboratory', 'district', 'price', 'sample_type', 'is_active', 'sort_order')
     list_editable = ('price', 'is_active', 'sort_order')
     list_filter = ('laboratory', 'district', 'is_active')
