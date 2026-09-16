@@ -20,7 +20,15 @@ class LaboratoryViewSet(viewsets.ModelViewSet):
     queryset = Laboratory.objects.all()
     serializer_class = LaboratorySerializer
     permission_classes = [ReadOnlyOrProvince]
-    filterset_fields = ['is_active', 'code']
+    filterset_fields = ['is_active']
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        code = (self.request.query_params.get('code') or '').strip()
+        if code:
+            # Kod bazada kichik/katta harf bilan yozilgan bo'lishi mumkin
+            qs = qs.filter(code__iexact=code)
+        return qs
 
 
 class ServiceViewSet(viewsets.ModelViewSet):

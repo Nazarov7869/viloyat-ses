@@ -41,3 +41,13 @@ Sayt: **http://localhost:8080/**, admin kirish: **http://localhost:8080/login**
 1. `/login` sahifasida "Ro'yxatdan o'tish" orqali hisob yarating.
 2. Django admin panelida (`/admin/`) shu foydalanuvchiga rol va (kerak bo'lsa) tuman tayinlang.
 3. Qayta kiring — tizim rolga mos boshqaruv paneliga yo'naltiradi.
+
+## Laboratoriya xulosa blankalari
+
+Laborant buyurtmani ochganda asl hujjat ko'rinishidagi blankani to'ldiradi,
+saqlaydi va chop etadi. Blankalar `hujjattlar/` papkasidagi fayllardan
+yasalgan — batafsil: [`tools/blanks/README.md`](tools/blanks/README.md).
+
+Har bir analizga standart blanka Django admin yoki "Sozlamalar" sahifasida
+("Xulosa shabloni") biriktiriladi; laborant buyurtma ichida boshqasini tanlashi
+mumkin.

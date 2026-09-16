@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 from django.conf import settings
-from django.core.management import call_command
+from django.core import serializers
 from django.core.management.base import BaseCommand
 
 from accounts.models import User, UserRole
@@ -21,8 +21,17 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         fixture = Path(settings.BASE_DIR) / 'seed_catalog.json'
         if fixture.exists():
-            call_command('loaddata', str(fixture))
-            self.stdout.write(self.style.SUCCESS(f"Loaded catalog fixture from {fixture}"))
+            # Faqat bazada hali yo'q yozuvlar qo'shiladi: admin panelda qilingan
+            # o'zgarishlar (narx, xulosa shabloni va h.k.) har qayta ishga
+            # tushirishda ustidan yozib yuborilmasin.
+            created = 0
+            with fixture.open(encoding='utf-8') as fh:
+                for obj in serializers.deserialize('json', fh):
+                    model = type(obj.object)
+                    if not model.objects.filter(pk=obj.object.pk).exists():
+                        obj.save()
+                        created += 1
+            self.stdout.write(self.style.SUCCESS(f"Catalog fixture: {created} ta yangi yozuv qo'shildi ({fixture})"))
         else:
             self.stdout.write(self.style.WARNING(f"No fixture at {fixture}, skipping catalog seed"))
 

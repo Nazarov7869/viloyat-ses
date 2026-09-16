@@ -50,7 +50,7 @@ const processFromOrders = (a: AdmissionRow) => {
 const QabulTolovAdmin = () => {
   const { toast } = useToast();
   const { districtId } = useUserContext();
-  const { laboratories, services } = useCatalog();
+  const { laboratories, services, reload: reloadCatalog } = useCatalog();
 
   const [admissions, setAdmissions] = useState<AdmissionRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -117,12 +117,8 @@ const QabulTolovAdmin = () => {
       for (const item of editTarget.admission_items) {
         const newLabId = editLabs[item.id];
         if (newLabId && newLabId !== item.laboratory_id) {
+          // Server analizning ish buyurtmasini ham shu laboratoriyaga birga ko'chiradi
           await api.patch(`/admission-items/${item.id}/`, { laboratory_id: newLabId });
-
-          const matchingOrder = editTarget.lab_orders.find((o) => o.admission_item_id === item.id);
-          if (matchingOrder) {
-            await api.patch(`/lab-orders/${matchingOrder.id}/`, { laboratory_id: newLabId });
-          }
         }
       }
 
@@ -188,8 +184,13 @@ const QabulTolovAdmin = () => {
   const handleAddPayment = async () => {
     if (!payTarget || !districtId) return;
     const amount = Number(payAmount) || 0;
+    const remaining = Number(payTarget.total_amount) - Number(payTarget.paid_amount);
     if (amount <= 0) {
       toast({ title: "Xatolik", description: "To'lov summasi noto'g'ri", variant: "destructive" });
+      return;
+    }
+    if (amount > remaining) {
+      toast({ title: "Xatolik", description: `To'lov qoldiqdan (${formatSum(remaining)}) ko'p bo'lishi mumkin emas`, variant: "destructive" });
       return;
     }
     setPaySaving(true);
@@ -365,6 +366,7 @@ const QabulTolovAdmin = () => {
         laboratories={laboratories}
         services={services}
         districtId={districtId}
+        onReloadCatalog={reloadCatalog}
         onSaved={() => fetchAdmissions()}
       />
 

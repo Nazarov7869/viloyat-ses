@@ -44,10 +44,12 @@ interface Props {
   services: ServiceRow[];
   districtId: string | null;
   onSaved: (admissionId: string) => void;
+  /** Katalogni (narxlarni) serverdan qayta yuklash */
+  onReloadCatalog?: () => void | Promise<void>;
 }
 
 const NewAdmissionDialog = ({
-  open, onOpenChange, laboratories, services, districtId, onSaved,
+  open, onOpenChange, laboratories, services, districtId, onSaved, onReloadCatalog,
 }: Props) => {
   const { toast } = useToast();
   const [step, setStep] = useState(0);
@@ -70,7 +72,10 @@ const NewAdmissionDialog = ({
       setPaid("0");
       setMethod("naqd");
       setCreatedOrder(null);
+      // Oyna ochilganda narxlar eng so'nggi holatda bo'lsin
+      onReloadCatalog?.();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const labName = (id: string | null) =>
@@ -85,6 +90,13 @@ const NewAdmissionDialog = ({
   const paidNum = Number(paid) || 0;
   const remaining = Math.max(0, total - paidNum);
   const paymentStatus = paidNum <= 0 ? "tolanmagan" : paidNum >= total ? "tolangan" : "qisman";
+  const discountNum = Number(discount) || 0;
+  const paymentError =
+    discountNum < 0 ? "Chegirma manfiy bo'lishi mumkin emas" :
+    discountNum > subtotal ? "Chegirma analizlar summasidan katta bo'lishi mumkin emas" :
+    paidNum < 0 ? "To'langan summa manfiy bo'lishi mumkin emas" :
+    paidNum > total ? `To'langan summa jami summadan (${formatSum(total)}) ko'p bo'lishi mumkin emas` :
+    null;
 
   const routingGroups = useMemo(() => {
     const map = new Map<string, { lab: string; items: string[] }>();
@@ -101,7 +113,7 @@ const NewAdmissionDialog = ({
   const canNext = () => {
     if (step === 0) return form.lastName.trim() && form.firstName.trim() && form.address.trim() && form.workplace.trim();
     if (step === 1) return selectedServices.length > 0;
-    if (step === 2) return true;
+    if (step === 2) return !paymentError;
     return true;
   };
 
@@ -127,6 +139,8 @@ const NewAdmissionDialog = ({
         items: selectedServices.map((s) => ({
           service_id: s.id,
           quantity: selected[s.id] || 1,
+          // Server narx o'zgargan bo'lsa qabulni rad etadi (ko'rsatilgan narx != haqiqiy)
+          expected_price: s.price,
         })),
         discount_amount: Number(discount) || 0,
         paid_amount: paidNum,
@@ -143,6 +157,14 @@ const NewAdmissionDialog = ({
       toast({ title: "Muvaffaqiyatli", description: `Qabul yakunlandi: ${admission.order_number}` });
     } catch (error) {
       logError("Qabulni saqlashda xatolik:", error);
+      const status = (error as { response?: { status?: number } })?.response?.status;
+      if (status === 409) {
+        // Narx o'zgargan — yangi narxlarni yuklab, kassirni To'lov qadamiga qaytaramiz
+        await onReloadCatalog?.();
+        setStep(2);
+        toast({ title: "Narx o'zgargan", description: apiErrorMessage(error, "Analiz narxi o'zgargan. Summani qayta tekshiring."), variant: "destructive" });
+        return;
+      }
       toast({ title: "Xatolik", description: apiErrorMessage(error, "Qabulni saqlashda xatolik yuz berdi"), variant: "destructive" });
     } finally {
       setSaving(false);
@@ -345,6 +367,7 @@ const NewAdmissionDialog = ({
                 </Badge>
               </div>
             </div>
+            {paymentError && <p className="text-sm text-destructive">{paymentError}</p>}
             <Button variant="outline" className="w-full" onClick={() => setPaid(String(total))}>
               To'lovni tasdiqlash (to'liq summa)
             </Button>

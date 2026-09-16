@@ -1,0 +1,150 @@
+[
+ {
+  "key": "brutselloz_ifa",
+  "title": "Bruselloz IFA tahlili (IgM/IgG)"
+ },
+ {
+  "key": "trichomonas_candida_ifa",
+  "title": "Trichomonas / Candida IFA tahlili"
+ },
+ {
+  "key": "echinokokk_ifa",
+  "title": "Exinokokk IFA tahlili (IgM/IgG)"
+ },
+ {
+  "key": "brutselloz_serological",
+  "title": "Zoonoz kasalliklarga tekshiruv xulosasi (Bruselloz)"
+ },
+ {
+  "key": "torch_ifa",
+  "title": "TORCH infeksiyasi tekshiruvi (IFA)"
+ },
+ {
+  "key": "aslo_srb_rf",
+  "title": "Antistreptolizin-O, S-reaktiv oqsil, revmatoid omil tahlili"
+ },
+ {
+  "key": "gepatit_c_ifa",
+  "title": "Gepatit C (anti-HCV, IFA) tahlili natijasi"
+ },
+ {
+  "key": "gepatit_pcr",
+  "title": "PZR usulida virusli gepatit markerlari"
+ },
+ {
+  "key": "covid_pcr",
+  "title": "COVID-19 PZR tekshiruvi natijalari"
+ },
+ {
+  "key": "parazit_biologik_ajralma",
+  "title": "Biologik ajralma tahlili (najas, surtma)"
+ },
+ {
+  "key": "bak_antibiotik",
+  "title": "Bakteriologik analiz xulosasi (antibiotiklarga sezgirlik)"
+ },
+ {
+  "key": "bak_manfiy",
+  "title": "Bakteriologik analiz xulosasi (qisqa, 4 nusxa)"
+ },
+ {
+  "key": "bak_ichimlik_suvi",
+  "title": "Ichimlik suvi — sanitariya-bakteriologik tekshirish bayonnomasi"
+ },
+ {
+  "key": "bak_mutloq_tozalik",
+  "title": "Mutloq tozalikka tekshirish bayonnomasi"
+ },
+ {
+  "key": "bak_oziq_ovqat",
+  "title": "Oziq-ovqat — sanitariya-bakteriologik tekshirish bayonnomasi"
+ },
+ {
+  "key": "bak_ochiq_suv",
+  "title": "Ochiq suv — sanitariya-bakteriologik tekshirish protokoli"
+ },
+ {
+  "key": "bak_surtma",
+  "title": "Surtma namunalari — sanitariya-bakteriologik tekshirish"
+ },
+ {
+  "key": "bak_tuproq",
+  "title": "Tuproq namunalari — sanitariya-bakteriologik tekshirish"
+ },
+ {
+  "key": "bak_havo",
+  "title": "Havo namunalari — sanitariya-bakteriologik tekshirish"
+ },
+ {
+  "key": "f328_ochiq_suv",
+  "title": "Ochiq suv havzalari va oqava suvlarni tekshirish bayonnomasi"
+ },
+ {
+  "key": "f330_ichimlik_suvi",
+  "title": "Ichimlik suvini tekshirish bayonnomasi"
+ },
+ {
+  "key": "f333_aholi_havosi",
+  "title": "Aholi yashash joylari havosini tekshirish bayonnomasi"
+ },
+ {
+  "key": "f334_yopiq_xona_havosi",
+  "title": "Yopiq xonalar havosini tekshirish bayonnomasi"
+ },
+ {
+  "key": "f335_ob_havo",
+  "title": "Ob-havo omillarini o'lchash bayonnomasi"
+ },
+ {
+  "key": "f338_tuproq",
+  "title": "Tuproq namunalarini tekshirish bayonnomasi"
+ },
+ {
+  "key": "f340_elektromagnit",
+  "title": "Elektromagnit maydoni kuchlanishini o'lchash bayonnomasi"
+ },
+ {
+  "key": "f341_shovqin",
+  "title": "Shovqin va tebranishni o'lchash bayonnomasi"
+ },
+ {
+  "key": "f342_yoruglik",
+  "title": "Yorug'likni o'lchash bayonnomasi"
+ },
+ {
+  "key": "f347_oziq_ovqat",
+  "title": "Oziq-ovqat mahsulotlari namunalarini tekshirish bayonnomasi"
+ },
+ {
+  "key": "f347_oziq_ovqat_v2",
+  "title": "Oziq-ovqat namunalarini tekshirish bayonnomasi (2-variant)"
+ },
+ {
+  "key": "f363_polimer",
+  "title": "Polimer va boshqa materiallarni tekshirish bayonnomasi"
+ },
+ {
+  "key": "f279_inm_pasport",
+  "title": "Ionlashtiruvchi nurlar manbalari bilan ishlash — sanitariya xulosasi"
+ },
+ {
+  "key": "f356_dozimetrik",
+  "title": "Dozimetrik o'lchov bayonnomasi"
+ },
+ {
+  "key": "f357_rentgen",
+  "title": "Rentgen kabinetini foydalanishga qabul qilish dalolatnomasi"
+ },
+ {
+  "key": "radiol_namuna_akt",
+  "title": "Mahsulotlardan namunalar olish dalolatnomasi (AKT)"
+ },
+ {
+  "key": "f394_dezinfeksiya",
+  "title": "Dezinfeksiya vositalarini tekshirish bayonnomasi"
+ },
+ {
+  "key": "f319_dalolatnoma",
+  "title": "Sanitariya-epidemiologik tekshiruv o'tkazilganligi dalolatnomasi"
+ }
+]

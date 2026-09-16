@@ -126,6 +126,11 @@ class LabOrder(TimeStampedUUIDModel):
     approved_by = models.CharField(max_length=200, null=True, blank=True)
     approved_at = models.DateTimeField(null=True, blank=True)
     operator_name = models.CharField(max_length=200, null=True, blank=True)
+    # Xulosa blankasi: tanlangan shablon kaliti va blankaga yozilgan qiymatlar
+    # ({maydon_nomi: matn}). Shablonlar frontend/public/blanks/manifest.json da.
+    conclusion_template = models.CharField(max_length=60, blank=True, default='')
+    conclusion_data = models.JSONField(default=dict, blank=True)
+    conclusion_updated_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ['-created_at']
